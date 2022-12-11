@@ -7,6 +7,7 @@ export const jevkoFromString = (str, delimiters) => {
   let parent = {subjevkos: []}, prefix = '', h = 0, mode = 'normal'
   let line = 1, column = 1
   let tag = '', t = 0
+  let sawFirstQuoter = false
   for (let i = 0; i < str.length; ++i) {
     const c = str[i]
 
@@ -25,20 +26,26 @@ export const jevkoFromString = (str, delimiters) => {
       }
     } else if (mode === 'heredoc') {
       if (c === quoter) {
-        const found = str.slice(h, i)
-        if (found === tag) {
-          const jevko = {
-            subjevkos: [], 
-            suffix: str.slice(t, h - 1),
-            tag
-          }
-          parent.subjevkos.push({prefix, jevko})
-          prefix = ''
+        if (sawFirstQuoter === false) {
           h = i + 1
-          tag = ''
-          mode = 'normal'
+          sawFirstQuoter = true
         } else {
-          h = i + 1
+          const found = str.slice(h, i)
+          if (found === tag) {
+            const jevko = {
+              subjevkos: [], 
+              suffix: str.slice(t, h - 1),
+              tag
+            }
+            parent.subjevkos.push({prefix, jevko})
+            prefix = ''
+            h = i + 1
+            tag = ''
+            mode = 'normal'
+            sawFirstQuoter = false
+          } else {
+            h = i + 1
+          }
         }
       }
     } else /*if (mode === 'normal')*/ if (c === escaper) {
@@ -70,7 +77,7 @@ export const jevkoFromString = (str, delimiters) => {
   // todo: better error msgs
   if (mode === 'escaped') throw SyntaxError(`Unexpected end after escaper (${escaper})!`)
   if (mode === 'tag') throw SyntaxError(`Unexpected end after quoter (${quoter})!`)
-  if (mode === 'heredoc') throw SyntaxError(`Unexpected end after quoter (${quoter})!`)
+  if (mode === 'heredoc' || mode === 'heredoc0') throw SyntaxError(`Unexpected end after quoter (${quoter})!`)
   if (parents.length > 0) throw SyntaxError(`Unexpected end: missing ${parents.length} closer(s) (${closer})!`)
   parent.suffix = prefix + str.slice(h)
   parent.opener = opener

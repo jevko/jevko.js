@@ -43,7 +43,7 @@ Deno.test('slicing optimization', () => {
   assert(jevkoFromString(`  \`\`\`\`aaa\`[bbb\`]\`]ccc\`\`  []`).subjevkos[0].prefix === '  ``aaa[bbb]]ccc`  ')
 })
 
-Deno.test('jevkoFromString', () => {
+Deno.test('/heredoc/', () => {
   const parsed = jevkoFromString(`
 test \`/x/]]][[[\`\`\`///y/y/d/ddc/x/
 `, {quoter: '/'})
@@ -51,4 +51,12 @@ test \`/x/]]][[[\`\`\`///y/y/d/ddc/x/
   assertEquals(sub.prefix, '\ntest ')
   assertEquals(sub.jevko.suffix, ']]][[[\`\`\`///y/y/d/ddc')
   assertEquals(sub.jevko.tag, 'x')
+})
+
+Deno.test('heredoc 2', () => {
+  const str = `end \`'''?\\s*(?=[\\[\\]])''`
+
+  const parsed = jevkoFromString(str)
+
+  console.log(JSON.stringify(parsed, null, 2))
 })
