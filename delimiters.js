@@ -3,6 +3,13 @@ export const defaultCloser = ']'
 export const defaultEscaper = '`'
 export const defaultQuoter = "'"
 
+export const defaultDelimiters = {
+  opener,
+  closer,
+  escaper,
+  quoter,
+}
+
 export const normalizeDelimiters = (delims) => {
   const {
     opener = defaultOpener, 
