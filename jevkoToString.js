@@ -31,7 +31,10 @@ const recur = (jevko, delimiters) => {
   return delimiters.opener + ret + escape(suffix, delimiters) + delimiters.closer
 }
 
-const stringToHeredoc = (str, tag, delimiters) => {
+/**
+ * Assumes delimiters are normalized
+ */
+export const stringToHeredoc = (str, tag, delimiters) => {
   const {quoter: q} = delimiters
   let id = tag
   let tok = `${q}${tag}${q}`
