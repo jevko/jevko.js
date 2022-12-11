@@ -4,10 +4,10 @@ export const defaultEscaper = '`'
 export const defaultQuoter = "'"
 
 export const defaultDelimiters = {
-  opener,
-  closer,
-  escaper,
-  quoter,
+  opener: defaultOpener,
+  closer: defaultCloser,
+  escaper: defaultEscaper,
+  quoter: defaultQuoter,
 }
 
 export const normalizeDelimiters = (delims) => {
