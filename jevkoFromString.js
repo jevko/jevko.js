@@ -8,6 +8,10 @@ export const jevkoFromString = (str, delimiters) => {
   let line = 1, column = 1
   let tag = '', t = 0
   let sawFirstQuoter = false
+
+  // note: iterating thru code units rather than code points
+  // this is effectively correct as long as each delimiter fits within one code unit
+  // todo: perhaps enforce?
   for (let i = 0; i < str.length; ++i) {
     const c = str[i]
 

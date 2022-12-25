@@ -53,10 +53,31 @@ test \`/x/]]][[[\`\`\`///y/y/d/ddc/x/
   assertEquals(sub.jevko.tag, 'x')
 })
 
-Deno.test('heredoc 2', () => {
+Deno.test(`'heredoc'`, () => {
   const str = `end \`'''?\\s*(?=[\\[\\]])''`
 
   const parsed = jevkoFromString(str)
 
-  console.log(JSON.stringify(parsed, null, 2))
+  assertEquals(parsed.subjevkos[0].jevko.suffix, `'?\\s*(?=[\\[\\]])`)
+})
+
+Deno.test('heredoc edge', () => {
+  const str = `
+  end \`'''a''
+  end \`''a'a''
+  end \`'''a'a''
+`
+
+  const parsed = jevkoFromString(str)
+  const {subjevkos} = parsed
+
+  assertEquals(subjevkos[0].jevko.suffix, `'a`)
+  assertEquals(subjevkos[1].jevko.suffix, `a'a`)
+  assertEquals(subjevkos[2].jevko.suffix, `'a'a`)
+})
+
+Deno.test('unicode', () => {
+  const t = `_20- _D7FF-퟿_6c0f-氏_E000-_FFFD-�_effe-_010000-[𐀀]_10FFFF-􏿿_08ffff-򏿿`
+
+  console.log(JSON.stringify(jevkoFromString(t), null, 2))
 })
