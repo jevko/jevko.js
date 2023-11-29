@@ -12,7 +12,11 @@ export const jevkoFromString = (str, delimiters) => {
   // todo: save tag + tag info in jevko
   const open = (prefix, i, tag) => {
     const jevko = {subjevkos: []}
-    parent.subjevkos.push({prefix, tag, jevko})
+    parent.subjevkos.push({
+      prefix, 
+      ...(tag !== undefined && {tag}),
+      jevko,
+    })
     buffer = ''
     h = i + 1
     parents.push(parent)
@@ -22,7 +26,7 @@ export const jevkoFromString = (str, delimiters) => {
   // todo: save tag + tag info in jevko
   const close = (suffix, i, tag) => {
     parent.suffix = suffix
-    parent.tag = tag
+    if (tag !== undefined) parent.tag = tag
     buffer = ''
     h = i + 1
     if (parents.length < 1) throw SyntaxError(`Unexpected closer (${closer}) at ${line}:${column}!`)
@@ -30,24 +34,23 @@ export const jevkoFromString = (str, delimiters) => {
   }
 
   // note: checks tag from index 1, assuming tag[0] is always escaper
-  const checkTag = (tag) => {
-    let t = ''
-    let j = 0
-    let invalid = false
+  const parseQuoteMark = (i) => {
+    // note: prepending escaper for symmetry
+    // note: doubling escapers for symmetry
+    const tag = escaper + 
+          (buffer + str.slice(h, i))
+            .replaceAll(escaper, escaper + escaper)
+
     for (let i = 1; i < tag.length; ++i) {
       const c = tag[i]
-      if ([opener, closer].includes(c)) {
-        invalid = true
-        t += tag.slice(j, i) + escaper
-        j = i
+      if (c !== escaper) {
+        throw SyntaxError(
+          `Quotation must start with ${escaper}${quoter} or ${escaper}${escaper}${escaper}${quoter} or ${escaper}${escaper}${escaper}${escaper}${escaper}${quoter} or... The number of ${escaper} before ${quoter} must be ODD! Instead found: ${tag.slice(1)}${escaper}${quoter}`
+        )
       }
     }
-    t += tag.slice(j)
-    if (invalid) {
-      throw SyntaxError(
-        `Heredoc tag must not include ${opener} or ${closer}! The tag was: ${t}`
-      )
-    }
+
+    return tag
   }
 
   // note: iterating thru code units rather than code points
@@ -59,15 +62,7 @@ export const jevkoFromString = (str, delimiters) => {
     if (mode === 'escaped') {
       if (c === escaper || c === opener || c === closer) mode = 'normal'
       else if (c === quoter) {
-        // note: trimming
-        // note: prepending escaper for symmetry
-        // note: doubling escapers for symmetry
-        tag = escaper + 
-          (buffer + str.slice(h, i))
-            .trimStart()
-            .replaceAll(escaper, escaper + escaper)
-        // note: disallow []
-        checkTag(tag)
+        tag = parseQuoteMark(i)
         mode = 'heredoc'
         h = i + 1
         t = i + 1
@@ -76,18 +71,17 @@ export const jevkoFromString = (str, delimiters) => {
       if (c === quoter) {
         t = i + 1
       } else if (c === opener) {
-        // note: trimming
-        const found = str.slice(t, i).trimEnd()
+        const found = str.slice(t, i)
         if (found === tag) {
           // todo: save tag + tag info in jevko
-          open(str.slice(h, t - 1), i)
+          open(str.slice(h, t - 1), i, tag)
           mode = 'normal'
         } // else t = i + 1
       } else if (c === closer) {
-        const found = str.slice(t, i).trimEnd()
+        const found = str.slice(t, i)
         if (found === tag) {
           // todo: save tag + tag info in jevko
-          close(str.slice(h, t - 1), i)
+          close(str.slice(h, t - 1), i, tag)
           mode = 'normal'
         } // else t = i + 1
       }
@@ -111,9 +105,10 @@ export const jevkoFromString = (str, delimiters) => {
   // todo: better error msgs
   if (mode === 'escaped') throw SyntaxError(`Unexpected end after escaper (${escaper})!`)
   else if (mode === 'heredoc') {
-    const found = str.slice(t).trimEnd()
+    const found = str.slice(t)
     if (found === tag) {
       parent.suffix = str.slice(h, t - 1)
+      parent.tag = tag
     } else {
       throw SyntaxError(`Unexpected end before heredoc closed! Expected tag: [${tag.slice(1)}], found: [${found}].`)
     }

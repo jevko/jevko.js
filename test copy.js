@@ -40,7 +40,8 @@ Deno.test('jevkoFromString', () => {
 
 // todo: support final heredoc
 Deno.test(`'heredoc'`, () => {
-  const str = `end\`''?\\s*(?=[\\[\\]])'\`end`
+  const str = `\`''?\\s*(?=[\\[\\]])'\``
+  // const str = `end\`''?\\s*(?=[\\[\\]])'\`end`
 
   const parsed = jevkoFromString(str)
 
@@ -52,11 +53,13 @@ Deno.test('heredoc edge', () => {
   end [\`'''a''\`]
   end [\`''a'a''\`]
   end [\`'''a'a''\`]
-  test [\`''\`]
-  tag\`'[prefix]'\`tag [suffix]
-  tag\`'[prefix]'\`tag [tag\`'[suffix]'\`tag]
+  test [\`''\`]\`'[prefix]'\`[suffix]
+  prefix [\`'[suffix]'\`]
   symmetry [\`\`\`'...'\`\`\`]
 `
+
+// tag\`'[prefix]'\`tag [suffix]
+// tag\`'[prefix]'\`tag [tag\`'[suffix]'\`tag]
 
   const parsed = jevkoFromString(str)
   const {subjevkos} = parsed
@@ -82,11 +85,11 @@ Deno.test('jevkoFromString heredoc fail', () => {
 Deno.test('doctest', () => {  
   const str = Deno.readTextFileSync('doctest')
 
-  const x = jevkoFromString(str)
+  const parsed = jevkoFromString(str)
 
   let ret = ''
 
-  for (const {prefix, jevko} of x.subjevkos) {
+  for (const {prefix, jevko} of parsed.subjevkos) {
     ret += prefix
 
     const ss = jevko.subjevkos
@@ -97,13 +100,18 @@ Deno.test('doctest', () => {
       ret += jevko.suffix
     }
 
-    for (const {prefix, jevko: j} of ss.slice(1)) {
+    for (const {prefix, jevko: j} of ss.slice(1, -1)) {
       ret += `\n   :${prefix.replace(/\s/g, '')}: `
       ret += j.suffix
     }
-    ret += '\n' + normalizeindent(jevko.suffix, 3)
+
+    {
+      const {prefix, jevko} = ss.at(-1)
+      assert(prefix.trim() === '')
+      ret += '\n' + normalizeindent(jevko.suffix, 3)
+    }
   }
-  ret += x.suffix
+  ret += parsed.suffix
 
   console.log(ret)
 })
