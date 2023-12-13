@@ -1,4 +1,5 @@
-import {jevkoFromString} from './jevkoFromString copy 2.js'
+import {jevkoFromString} from './jevkoFromStringFenced.js'
+import {jevkoFromString as jfs2, transform} from './jevkoFromStringFencedSlices.js'
 
 import {assert, assertEquals} from './devDeps.js'
 
@@ -85,7 +86,7 @@ Deno.test('jevkoFromString heredoc fail', () => {
 Deno.test('doctest', () => {  
   const str = Deno.readTextFileSync('doctest')
 
-  const parsed = jevkoFromString(str)
+  const parsed = transform(jfs2(str))
 
   let ret = ''
 
