@@ -1,5 +1,5 @@
 // todo: simplify
-import { normalizeDelimiters } from "./delimiters.js";
+import { normalizeDelimiters, defaultDelimiters } from "./delimiters.js";
 
 const advance = (str, state) => {
   const c = str[state.index]
@@ -34,25 +34,25 @@ export const _makeDecoders = (delimiters) => {
   const {opener, closer, escaper, fencer} = delimiters
 
   // todo: max depth
-  const parseRoot = (str, next) => {
+  const parseRoot = (str, receiver) => {
     const state = {index: 0, line: 1, column: 1}
-    parseTree(str, state, next)
+    parseTree(str, state, receiver)
     if (state.index !== str.length)    throw SyntaxError(
       `Expected end of input but got ${str[state.index]} at ${locationstr(state)}!`
     )
-    return next.end()
+    return receiver.end()
   }
 
-  const parseTree = (str, state, next) => {
+  const parseTree = (str, state, receiver) => {
     for (;;) {
       const text = parseText(str, state)
       if (str[state.index] === closer || state.index === str.length) {
-        return next.suffix(text)
+        return receiver.suffix(text)
       }
       else {
-        next.prefix(text)
+        receiver.prefix(text)
       }
-      parseSubtree(str, state, next)
+      parseSubtree(str, state, receiver)
     }
   }
   const parseSubtree = (str, state, next) => {
@@ -283,8 +283,7 @@ export const _makeDecoders = (delimiters) => {
 }
 
 // todo: naming
-// todo: use _makeDecoders(defaultDelimiters)
-export const parseRoot = makeDecoders()
+export const decodeString = _makeDecoders(defaultDelimiters)
 
 // note: caches the result in text, so subsequent calls will just return that
 export const textToString = (text) => {

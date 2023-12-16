@@ -1,5 +1,5 @@
 import { defaultDelimiters } from "./delimiters.js";
-import { parseRoot, textToString } from "./decode.js";
+import { decodeString, textToString } from "./decode.js";
 
 export const parseSadzonka = (str) => {
   return toval(preproc(seedFromString(str)))
@@ -8,7 +8,7 @@ export const parseSadzonka = (str) => {
 export const seedFromString = (str) => {
   let current = {subs: [], text: ''}
   const parents = [current]
-  return parseRoot(str, {
+  return decodeString(str, {
     prefix: (text) => {
       const tree = {subs: [], text: ''}
       current.subs.push({text: textToString(text), tree})

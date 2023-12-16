@@ -1,4 +1,4 @@
-import { normalizeDelimiters } from "./delimiters.js"
+import { normalizeDelimiters, defaultDelimiters } from "./delimiters.js"
 
 // todo: tests for all this
 // todo: maybe a makeEncdec
@@ -111,5 +111,4 @@ export const _makeEncoders = (delimiters, fencelengthlimit = 15) => {
   return {escape, fence, smartEscape}
 }
 
-// todo: use _makeEncoders(defaultDelimiters)
-export const {escape, fence, smartEscape} = makeEncoders()
+export const {escape, fence, smartEscape} = _makeEncoders(defaultDelimiters)

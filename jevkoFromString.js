@@ -1,11 +1,11 @@
-import { parseRoot, textToString } from "./decode.js"
+import { decodeString, textToString } from "./decode.js"
 
 // todo: return this from makeDecoders
 // could also impl a backward-compatible version that generates decoders on each call (yuck!)
 export const jevkoFromString = (str) => {
   let current = {subjevkos: [], suffix: ''}
   const parents = [current]
-  const parent = parseRoot(str, {
+  const parent = decodeString(str, {
     prefix: (text) => {
       const {fencelength} = text
       const jevko = {subjevkos: [], suffix: ''}
