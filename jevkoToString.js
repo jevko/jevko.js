@@ -31,6 +31,7 @@ const recur = (jevko, delimiters) => {
   return delimiters.opener + ret + escape(suffix, delimiters) + delimiters.closer
 }
 
+// todo: rewrite this with new fencing in mind
 /**
  * Assumes delimiters are normalized
  */

@@ -1,12 +1,37 @@
 {
   "type": "module",
-  "name": "jevko.js",
+  "name": "@jevko-org/jevko.js",
+  "description": "Implementation of Jevko in JavaScript.",
+  "version": "0.2.0",
   "main": "mod.js",
-  "private": true,
+  "scripts": {
+    "test": "node --test"
+  },
+  "//////////////////////////////////////": "TODO",
+  "files": [
+    "parse.js"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jevko/jevko.js.git"
   },
-  "author": "Darius J Chuck",
-  "license": "MIT"
+  "author": {
+    "name": "Darius J Chuck",
+    "url": "https://djedr.github.io"
+  },
+  "license": "MIT",
+  "keywords": [
+    "jevko",
+    "minimal",
+    "syntax",
+    "parser",
+    "versatile",
+    "simple",
+    "javascript",
+    "tree",
+    "trees",
+    "streaming",
+    "lossless",
+    "runtime-independent"
+  ]
 }

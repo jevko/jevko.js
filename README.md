@@ -14,7 +14,7 @@ Includes a Jevko parser/decoder (`jevkoFromString`) and a Jevko stringifier/enco
 ### Node.js
 
 ```
-npm install jevko/jevko.js#semver:0.1.0
+npm install jevko/jevko.js#semver:0.2.0
 ```
 
 ### Deno and the browser
@@ -22,13 +22,13 @@ npm install jevko/jevko.js#semver:0.1.0
 Import from [jsDelivr](https://www.jsdelivr.com/):
 
 ```js
-import {jevkoFromString} from 'https://cdn.jsdelivr.net/gh/jevko/jevko.js@v0.1.0/mod.js'
+import {jevkoFromString} from 'https://cdn.jsdelivr.net/gh/jevko/jevko.js@v0.2.0/mod.js'
 ```
 
 ## Quickstart
 
 ```js
-import {jevkoFromString} from 'https://cdn.jsdelivr.net/gh/jevko/jevko.js@v0.1.0/mod.js'
+import {jevkoFromString} from 'https://cdn.jsdelivr.net/gh/jevko/jevko.js@v0.2.0/mod.js'
 
 jevkoFromString(`hello [world]`) 
 // -> {
