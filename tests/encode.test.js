@@ -5,7 +5,7 @@ import test from 'node:test'
 import assert from 'assert/strict'
 
 // todo: perhaps simply add a jevkoFromString roundtrip to all the other tests
-test(`fenced`, () => {
+test(`encode fenced`, () => {
   const str = `\`''?\\s*(?=[\\[\\]])'\``
 
   const parsed = jevkoFromString(str)

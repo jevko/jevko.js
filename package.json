@@ -7,9 +7,14 @@
   "scripts": {
     "test": "node --test"
   },
-  "//////////////////////////////////////": "TODO",
+  "///////////////////////": "TODO: remember to update files on each new file",
   "files": [
-    "parse.js"
+    "encode.js",
+    "decode.js",
+    "delimiters.js",
+    "jevkoFromString.js",
+    "jevkoToString.js",
+    "sadzonka.js"
   ],
   "repository": {
     "type": "git",
@@ -32,6 +37,12 @@
     "trees",
     "streaming",
     "lossless",
-    "runtime-independent"
+    "runtime-independent",
+    "sadzonka",
+    "format",
+    "lean",
+    "quick",
+    "easy",
+    "universal"
   ]
 }

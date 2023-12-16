@@ -31,7 +31,7 @@ export const makeDecoders = (delimiters, ...rest) => {
 // todo: enforce delimiters within one code unit
 // assumes delimiters are normalized
 export const _makeDecoders = (delimiters) => {
-  const {opener, closer, escaper, quoter: fencer} = delimiters
+  const {opener, closer, escaper, fencer} = delimiters
 
   // todo: max depth
   const parseRoot = (str, next) => {

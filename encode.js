@@ -9,7 +9,7 @@ export const makeEncoders = (delims, ...rest) => {
 
 // assumes delimiters are normalized
 export const _makeEncoders = (delimiters, fencelengthlimit = 15) => {
-  const {quoter: fencer, escaper, opener, closer} = delimiters
+  const {fencer, escaper, opener, closer} = delimiters
 
   const escape = (str) => {
     let ret = ''

@@ -2,13 +2,13 @@
 export const defaultOpener = '['
 export const defaultCloser = ']'
 export const defaultEscaper = '`'
-export const defaultQuoter = "'"
+export const defaultFencer = "'"
 
 export const defaultDelimiters = {
   opener: defaultOpener,
   closer: defaultCloser,
   escaper: defaultEscaper,
-  quoter: defaultQuoter,
+  fencer: defaultFencer,
 }
 
 // todo: require each delimiter to be exactly one code unit
@@ -17,9 +17,9 @@ export const normalizeDelimiters = (delims) => {
     opener = defaultOpener, 
     closer = defaultCloser, 
     escaper = defaultEscaper, 
-    quoter = defaultQuoter,
+    fencer = defaultFencer,
   } = delims ?? {}
-  const delimiters = [opener, closer, escaper, quoter]
+  const delimiters = [opener, closer, escaper, fencer]
   const delimiterSetSize = new Set(delimiters).size
   if (delimiterSetSize !== delimiters.length) {
     throw Error(`Delimiters must be unique! ${delimiters.length - delimiterSetSize} of them are identical:\n${delimiters.join('\n')}`)
@@ -29,7 +29,7 @@ export const normalizeDelimiters = (delims) => {
     opener,
     closer,
     escaper,
-    quoter,
+    fencer,
     _normalized: true,
   }
 }

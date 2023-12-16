@@ -1,4 +1,3 @@
 export {jevkoFromString} from './jevkoFromString.js'
-export {jevkoToString, stringToHeredoc} from './jevkoToString.js'
-export {escape} from './escape.js'
+export {jevkoToString, smartEscape, escape, fence, makeEncoders} from './jevkoToString.js'
 export {defaultDelimiters} from './delimiters.js'
