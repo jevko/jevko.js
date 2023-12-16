@@ -1,5 +1,6 @@
 import {defaultOpener, defaultCloser, defaultEscaper} from './delimiters.js'
 
+// todo: remove; this is now part of encoders
 export const escape = (str, {
   opener = defaultOpener,
   closer = defaultCloser,

@@ -22,11 +22,16 @@ const location = (state) => {
   return {index, line, column}
 }
 
+export const makeDecoders = (delimiters, ...rest) => {
+  return _makeDecoders(normalizeDelimiters(delimiters), ...rest)
+}
+
 // note: the parser is iterating thru code units rather than code points
 // this is effectively correct as long as each delimiter fits within one code unit
 // todo: enforce delimiters within one code unit
-export const makeParser = (delimiters) => {
-  const {opener, closer, escaper, quoter: fencer} = normalizeDelimiters(delimiters)
+// assumes delimiters are normalized
+export const _makeDecoders = (delimiters) => {
+  const {opener, closer, escaper, quoter: fencer} = delimiters
 
   // todo: max depth
   const parseRoot = (str, next) => {
@@ -192,6 +197,7 @@ export const makeParser = (delimiters) => {
       )
     }
   }
+  // note: this could go outside of _makeDelimiters
   const locationsToDigraphs = (locations) => {
     const digraphs = []
     for (let i = 0; i < locations.length - 1; i += 2) {
@@ -277,7 +283,8 @@ export const makeParser = (delimiters) => {
 }
 
 // todo: naming
-export const parseRoot = makeParser()
+// todo: use _makeDecoders(defaultDelimiters)
+export const parseRoot = makeDecoders()
 
 // note: caches the result in text, so subsequent calls will just return that
 export const textToString = (text) => {

@@ -2,7 +2,6 @@ import {jevkoFromString} from '../jevkoFromString.js'
 
 import test from 'node:test'
 import assert from 'assert/strict'
-import { readFileSync } from 'fs'
 
 test(`fenced`, () => {
   const str = `\`''?\\s*(?=[\\[\\]])'\``

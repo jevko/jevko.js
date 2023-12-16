@@ -1,4 +1,4 @@
-import { parseRoot, textToString } from "./parse.js"
+import { parseRoot, textToString } from "./decode.js"
 
 export const jevkoFromString = (str) => {
   let current = {subjevkos: [], suffix: ''}

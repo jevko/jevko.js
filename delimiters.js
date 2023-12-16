@@ -1,3 +1,4 @@
+// todo: rename quoter to fencer?
 export const defaultOpener = '['
 export const defaultCloser = ']'
 export const defaultEscaper = '`'
@@ -10,6 +11,7 @@ export const defaultDelimiters = {
   quoter: defaultQuoter,
 }
 
+// todo: require each delimiter to be exactly one code unit
 export const normalizeDelimiters = (delims) => {
   const {
     opener = defaultOpener, 
@@ -28,5 +30,6 @@ export const normalizeDelimiters = (delims) => {
     closer,
     escaper,
     quoter,
+    _normalized: true,
   }
 }

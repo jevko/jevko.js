@@ -1,51 +1,46 @@
 import { normalizeDelimiters } from "./delimiters.js"
-import { escape } from "./escape.js"
+import {_makeEncoders as makeBasicEncoders} from './encode.js'
 
-export const jevkoToString = (jevko, delims) => {
+// todo: tests for all this
+// todo: maybe a makeEncdec
+export const makeEncoders = (delims, fencelengthlimit = 15) => {
   const delimiters = normalizeDelimiters(delims)
+  const {opener, closer} = delimiters
 
-  const {subjevkos, suffix, tag} = jevko
+  const basicEncoders = makeBasicEncoders(delimiters, fencelengthlimit)
 
-  if (tag !== undefined) {
-    return stringToHeredoc(suffix, tag, delimiters)
+  const {fence, escape} = basicEncoders
+
+  // note: this encodes standard jevko
+  // todo: encoder for the AST
+  const jevkoToString = (jevko) => {
+    const {subjevkos, suffix, fencelength} = jevko
+  
+    if (fencelength !== undefined) {
+      return fence(suffix, fencelength)
+    }
+  
+    let ret = ''
+    for (const {prefix, jevko} of subjevkos) {
+      ret += `${escape(prefix)}${recur(jevko)}`
+    }
+    return ret + escape(suffix)
+  }
+  const recur = (jevko) => {
+    const {subjevkos, suffix, fencelength} = jevko
+  
+    if (fencelength !== undefined) {
+      return fence(suffix, fencelength)
+    }
+  
+    let ret = ''
+    for (const {prefix, jevko} of subjevkos) {
+      ret += `${escape(prefix)}${recur(jevko)}`
+    }
+    return opener + ret + escape(suffix) + closer
   }
 
-  let ret = ''
-  for (const {prefix, jevko} of subjevkos) {
-    ret += `${escape(prefix, delimiters)}${recur(jevko, delimiters)}`
-  }
-  return ret + escape(suffix, delimiters)
+  return {...basicEncoders, jevkoToString}
 }
 
-const recur = (jevko, delimiters) => {
-  const {subjevkos, suffix, tag} = jevko
-
-  if (tag !== undefined) {
-    return stringToHeredoc(suffix, tag, delimiters)
-  }
-
-  let ret = ''
-  for (const {prefix, jevko} of subjevkos) {
-    ret += `${escape(prefix, delimiters)}${recur(jevko, delimiters)}`
-  }
-  return delimiters.opener + ret + escape(suffix, delimiters) + delimiters.closer
-}
-
-// todo: rewrite this with new fencing in mind
-/**
- * Assumes delimiters are normalized
- */
-export const stringToHeredoc = (str, tag, delimiters) => {
-  const {quoter: q} = delimiters
-  let id = tag
-  let tok = `${q}${tag}${q}`
-  let stret = `${str}${tok}`
-  const pad = q === '='? '-': '='
-  while (stret.indexOf(tok) !== str.length) {
-    //?todo: more sophisticated id-generation algo
-    id += pad
-    tok = `${q}${id}${q}`
-    stret = `${str}${tok}`
-  }
-  return `${delimiters.escaper}${tok}${stret}`
-}
+export const {jevkoToString, escape, fence, smartEscape} = makeEncoders()

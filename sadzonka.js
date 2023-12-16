@@ -1,5 +1,5 @@
 import { defaultDelimiters } from "./delimiters.js";
-import { parseRoot, textToString } from "./parse.js";
+import { parseRoot, textToString } from "./decode.js";
 
 export const parseSadzonka = (str) => {
   return toval(preproc(seedFromString(str)))
@@ -102,6 +102,7 @@ export const unescape = (tree, {opener, closer, escaper} = defaultDelimiters) =>
   return ret + text
 }
 
+// todo: unhardcode [] -- makeEncoders
 export const stringifySadzonka = (val) => {
   if (val === null) throw TypeError(`Unexpected null`)
   if (typeof val === 'string') return escape(val)
@@ -122,6 +123,7 @@ export const stringifySadzonka = (val) => {
   throw TypeError(`Unsupported type: ${typeof val}`)
 }
 
+// todo: unhardcode [] -- makeEncoders
 const escape = (str) => {
   let h = 0
   const parts = []
@@ -148,6 +150,7 @@ const escape = (str) => {
   return tail
 }
 
+// todo: unhardcode [] -- makeEncoders
 export const stringifytree = (tree) => {
   let ret = ''
   const {subs, text} = tree
