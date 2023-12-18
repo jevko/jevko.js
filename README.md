@@ -13,6 +13,7 @@ Includes a Jevko parser/decoder (`jevkoFromString`) and a Jevko stringifier/enco
 
 ### Node.js
 
+<!-- todo: npm package -->
 ```
 npm install jevko/jevko.js#semver:0.2.0
 ```
