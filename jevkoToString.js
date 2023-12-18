@@ -43,4 +43,5 @@ export const makeEncoders = (delims, fencelengthlimit = 15) => {
   return {...basicEncoders, jevkoToString}
 }
 
+// todo: pehaps fence should not be returned?
 export const {jevkoToString, escape, fence, smartEscape} = makeEncoders()
