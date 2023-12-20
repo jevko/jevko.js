@@ -531,8 +531,10 @@ test('parse', () => {
   assert.deepEqual(parse("'seq[[abc][def]]"), ['abc', 'def'])
   assert.deepEqual(parse('.k1[abc] .k2[def]'), {k1: 'abc', k2: 'def'})
   assert.deepEqual(parse('.k1[abc] .k2[def] .;k3[xyz]'), {k1: 'abc', k2: 'def'})
-  assert.deepEqual(parse('.k1[abc] .k2[def] .[;k3][xyz]'), {k1: 'abc', k2: 'def', ';k3': 'xyz'})
-  assert.deepEqual(parse('.k1[abc] .k2[def] .[\\][xyz]'), {k1: 'abc', k2: 'def', '\\': 'xyz'})
+  // assert.deepEqual(parse('.k1[abc] .k2[def] .[;k3][xyz]'), {k1: 'abc', k2: 'def', ';k3': 'xyz'})
+  // assert.deepEqual(parse('.k1[abc] .k2[def] .[\\][xyz]'), {k1: 'abc', k2: 'def', '\\': 'xyz'})
+  assert.deepEqual(parse('.k1[abc] .k2[def] ./[[;k3][xyz]]'), {k1: 'abc', k2: 'def', ';k3': 'xyz'})
+  assert.deepEqual(parse('.k1[abc] .k2[def] ./[[\\][xyz]]'), {k1: 'abc', k2: 'def', '\\': 'xyz'})
 
   assert.deepEqual(parse('.k1``[v1]'), {'k1`': 'v1'})
   assert.deepEqual(parse('.k1[v1``]'), {k1: 'v1`'})
