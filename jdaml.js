@@ -163,9 +163,37 @@ const applyAttrs = (subs, parent = {_tag: ''}) => {
   return parent
 }
 const parsers = {
+  true: ({_subs, _tag, ...rest}) => {
+    if (_subs.length !== 0 || Object.entries(rest).length !== 0) throw Error('oops')
+    return true
+  },
+  false: ({_subs, _tag, ...rest}) => {
+    if (_subs.length !== 0 || Object.entries(rest).length !== 0) throw Error('oops')
+    return false
+  },
   nil: ({_subs, _tag, ...rest}) => {
     if (_subs.length !== 0 || Object.entries(rest).length !== 0) throw Error('oops')
     return null
+  },
+  Infinity: ({_subs, _tag, ...rest}) => {
+    if (_subs.length !== 0 || Object.entries(rest).length !== 0) throw Error('oops')
+    return Infinity
+  },
+  NaN: ({_subs, _tag, ...rest}) => {
+    if (_subs.length !== 0 || Object.entries(rest).length !== 0) throw Error('oops')
+    return NaN
+  },
+  // todo:
+  '=': ({_subs, _tag, ...rest}) => {
+    if (_subs.length !== 1 || Object.entries(rest).length !== 0) throw Error('oops')
+    const sub = _subs[0]
+    if (typeof sub !== 'string') throw Error('oops')
+    if (sub === '-Infinity') return -Infinity
+    if (sub === 'Infinity') return Infinity
+    if (sub === 'NaN') return NaN
+    const parsed = JSON.parse(sub)
+    if (typeof parsed === 'number') return parsed
+    throw Error('oops')
   },
   bool: ({_subs, _tag, ...rest}) => {
     if (_subs.length !== 1 || Object.entries(rest).length !== 0) {
@@ -266,77 +294,230 @@ const convertArray = (subs) => {
   return ret
 }
 
-const parseTagForHighlight = (tree) => {
-  const {subs, text} = tree
-  if (subs.length > 0) throw Error('subs.length > 0')
-  return textToString(text)
-}
 // todo:
-// export const stringifyDmń = (subs) => {
+// export const stringifyJdaml = (subs) => {
+
+
 export const parseElemsForHighlight = (tree) => {
   const {subs, text: fulltext} = tree
   const nsubs = []
-  let t
   for (const {text: fulltext, tree} of subs) {
-    const text = textToString(fulltext)
-    if (t !== undefined) {
-      if (text !== '') throw Error('oops: text !== ""')
-      nsubs.push({tag: t, subs: parseElemsForHighlight(tree)})
-      t = undefined
-      continue
-    }
 
-    const [txt, tag] = extractTag(text)
-    if (txt !== '') nsubs.push(txt)
-    if (tag.length === 1) {
-      t = tag + parseTagForHighlight(tree)
-      continue
-    }
-    if (tag.slice(1).startsWith(';')) {
+    const {text: txt, tag} = extractTagForHighlight(fulltext)
+    if (iszerolength(txt) === false) nsubs.push(txt)
+    if (iscommentedout(tag)) {
       nsubs.push({comment: true, tag, tree})
       continue
     }
     nsubs.push({tag, subs: parseElemsForHighlight(tree)})
   }
-  // todo: only allow singular ' but not .
-  if (t !== undefined) nsubs.push({tag: t, subs: [], singular: true})
-  const text = textToString(fulltext)
-  if (text !== '') nsubs.push(text)
+  if (iszerolength(fulltext) === false) nsubs.push(fulltext)
   return nsubs
+}
+const iscommentedout = (tag) => {
+  const length = slicelength(tag)
+  if (length < 2) return false
+  const {source, from} = tag
+  return source[from.index + 1] === ';'  
+}
+const slicelength = (slice) => {
+  return slice.til.index - slice.from.index
+}
+const iszerolength = (text) => {
+  const {from, til} = text
+  return from.index === til.index
+}
+const extractTagForHighlight = (text) => {
+  if (text.digraphs === undefined) {
+    console.error('>>>', text)
+    throw Error('fenced text only allowed in suffix position')
+  }
+  
+  const {from, thru, til, source, digraphs} = text
+  const state = {...thru}
+  for (; state.index >= from.index; moveback(state)) {
+    const c = source[state.index]
+    
+    if (c === '\n' || c === '\r') {
+      // todo: dedupe empty tag creation
+      const prev = location(til)
+      moveback(prev)
+      return {text, tag: {from: til, thru: prev, til, source}}
+    }
+    else if (c === '.' || c === "'") {
+      // todo: perhaps return also thru
+      const loc = location(state)
+      const prev = location(state)
+      moveback(prev)
+
+      const tag = {from: loc, thru, til, source}
+      // todo: validateTag(tag) to check that it has no digraphs
+      // // todo: opener, closer, escaper
+      // if (c === '`' || c === '[' || c === ']') {
+      // }
+      // else 
+      return {
+        text: {from, thru: prev, til: loc, digraphs, source},
+        tag,
+      }
+    }
+  }
+  // note: for now thru < from & til = from signifies 0-length slice
+  // todo: maybe a better design
+  const prev = location(til)
+  moveback(prev)
+  return {text, tag: {from: til, thru: prev, til, source}}
+}
+// todo
+const location = (state) => {
+  return {...state}
+}
+const moveback = (state) => {
+  // todo: line, col
+  state.index -= 1
+}
+const moveback_expensive = (str, state) => {
+  state.index -= 1
+  const c = str[state.index]
+  
+  if (c === '\n') {
+    state.linefeedread = true
+    // go back to previous line or str start, to measure this line's length
+    state.column = measurelinebackwards(str, state)
+    state.line -= 1
+  }
+  else if (c === '\r') {
+    if (state.linefeedread) {
+      state.linefeedread = false
+      state.column -= 1
+    }
+    else {
+      // go back to previous line or str start, to measure this line's length
+      state.column = measurelinebackwards(str, state)
+      state.line -= 1
+    }
+  }
+  else {
+    state.column -= 1
+  }
+}
+// todo:
+const measurelinebackwards = (str, state) => {
+  const tstate = location(state)
+  const endindex = tstate.index
+
+  // if we hit the beginning
+  if (tstate.index === 0) {
+    // line has only the newline in it (1 column)
+    return 1
+  }
+  // move back
+  tstate.index -= 1
+  if (state.linefeedread) {
+    // if line ends with CR LF, skip the CR
+    if (str[tstate.index] === '\r') {
+      tstate.index -= 1
+    }
+  }
+
+  while (true) {
+    const c = str[state.index]
+    // if we reached the previous line, here is our answer
+    if (c === '\r' || c === '\n') {
+      return endindex - tstate.index
+    }
+    // if we hit the beginning, the answer is + 1
+    // as the line contains at least the newline character that ends it
+    if (tstate.index === 0) {
+      return endindex - tstate.index + 1
+    }
+    // move back
+    tstate.index -= 1
+  }
 }
 export const highlightSubs = (subs, level = 0) => {
   let ret = '<span class="subs">'
   for (const sub of subs) {
-    if (typeof sub === 'string') {
-      ret += `<span class="text">${sub}</span>`
+    // note duck typing to check if sub is a slice
+    // todo:
+    if (sub.from !== undefined) {
+      ret += highlightTextSlice(sub)
     }
     else if (sub.comment) {
       // todo:
-      ret += `<span class="comment">${tag}[todo]</span>`
-    }
-    else {
-      const {tag, subs, singular} = sub
-      // console.log("SUB", sub)
-
-      if (singular) {
-        ret += `<span class="elem level-${level % 3}"><span class="tag">${tag[0]}<span class="bracket">[</span><span class="content">${tag.slice(1)}</span><span class="bracket">]</span></span></span>`
+      const {tag, subs} = sub
+      const {source, from, til} = tag
+      if (subs.length === 0) {
+        ret += `<span class="comment">${source.slice(from.index, til.index)}[]</span>`
       }
       else {
-        console.log('ttt', tag, sub)
-        const t = tag === ''? '': `<span class="tag">${tag[0]}<span class="content">${tag.slice(1)}</span></span>`
+        const last = subs.at(-1)
+        // todo: recursively find last sub that has a til (a text slice) and use that + the depth of recursion to highlight [[[[]]]]
+        // something like ${highlightCommentSubs(subs)}
 
-        if (tag.startsWith('.')) {
-          ret += `<span class="attr level-${level % 3}">${t}<span class="bracket">[</span>${highlightSubs(subs, level + 1)}<span class="bracket">]</span></span>`
-        }
-        else {
-          ret += `<span class="elem level-${level % 3}">${t}<span class="bracket">[</span>${highlightSubs(subs, level + 1)}<span class="bracket">]</span></span>`
-        }
+        // todo:
+        ret += `<span class="comment">${source.slice(from.index, til.index)}[TODO]</span>`
+      }
+    }
+    else {
+      const {tag, subs} = sub
+      // console.log("SUB", sub)
+
+      // console.log('ttt', tag, sub)
+      const t = highlightTagSlice(tag)
+
+      if (tagSliceStartsWithDot(tag)) {
+        ret += `<span class="attr level-${level % 3}">${t}<span class="bracket">[</span>${highlightSubs(subs, level + 1)}<span class="bracket">]</span></span>`
+      }
+      else {
+        ret += `<span class="elem level-${level % 3}">${t}<span class="bracket">[</span>${highlightSubs(subs, level + 1)}<span class="bracket">]</span></span>`
       }
     }
   }
   return ret + '</span>'
 }
+const tagSliceStartsWithDot = (tag) => {
+  if (iszerolength(tag)) return false
+  const {from, til, source} = tag
+  return source[from.index] === '.'
+}
+const highlightTagSlice = (slice) => {
+  if (iszerolength(slice)) return ''
 
+  const {source, from, til} = slice
+
+  const fromi = from.index
+
+  // todo: simplify 1-length tags (can remove span.content)
+  return `<span class="tag">${source[fromi]}<span class="content">${source.slice(fromi + 1, til.index)}</span></span>`
+}
+const highlightTextSlice = (slice) => {
+  let ret = `<span class="text">`
+  
+  const {digraphs, source} = slice
+  if (digraphs === undefined) {
+    // fenced
+    const {from, til, content} = slice
+    const contentfromi = content.from.index
+    const contenttili = content.til.index
+    ret += `<span class="fence">${source.slice(from.index, contentfromi)}</span>${
+      source.slice(contentfromi, contenttili)
+    }<span class="fence">${source.slice(contenttili, til.index)}</span>`
+  }
+  else {
+    const {from, til} = slice
+    let i = from.index
+    for (const di of digraphs) {
+      const difrom = di.from.index
+      ret += source.slice(i, difrom)
+      i = di.thru.index + 1
+      ret += `<span class="digraph">${source.slice(difrom, i)}</span>`
+    }
+    ret += source.slice(i, til.index)
+  }
+
+  return ret + `</span>`
+}
 
 export const seedFromStringForHighlight = (str) => {
   let current = {subs: [], text: undefined}

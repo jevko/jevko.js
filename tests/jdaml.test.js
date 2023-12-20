@@ -145,7 +145,7 @@ yada yada
 
 ]`
 
-test(`dmń 1`, () => {
+test(`JDAML 1`, () => {
   const pd = parseJdaml(testdata1)
 
   assert.deepEqual(pd, {
@@ -179,7 +179,7 @@ test(`dmń 1`, () => {
 })
 
 
-test(`dmń 2`, () => {
+test(`JDAML 2`, () => {
   const pd = parseJdaml(testdata2)
 
   // check that non-attr subs are disallowed in map/object-like trees
@@ -211,12 +211,12 @@ test(`dmń 2`, () => {
     }
   })
 })
-test(`dmń 3`, () => {
+test(`JDAML 3`, () => {
   const pd = parseJdaml(td3)
 
   assert.deepEqual(pd, true)
 })
-test(`dmń 3`, () => {
+test(`JDAML 3`, () => {
   const pd = parseJdaml(td4)
 
   // console.log(JSON.stringify(pd, null, 2))
@@ -331,8 +331,42 @@ test(`dmń 3`, () => {
     ]
   })
 })
-test(`dmń doctest`, () => {
+test(`JDAML doctest`, () => {
   const pd = parseJdaml(doctest)
+
+  console.log(JSON.stringify(pd, null, 2))
+
+  // todo
+  // assert.deepEqual(pd, true)
+})
+test(`JDAML =`, () => {
+  const testdata1 = `
+  last modified 1 April 2001 by John Doe
+  .first name[John]
+  .last name[Smith]
+  .is alive[  'true[]  ]
+  .age['=[27]]
+  .address[
+    .street address[21 2nd Street]
+    .city[New York]
+    .state[NY]
+    .postal code[10021-3100]
+  ]
+  any number of phone numbers can be entered
+  .phone numbers[
+    [
+      .type[home]
+      .number[212 555-1234]
+    ]
+    [
+      .type[office]
+      .number[646 555-4567]
+    ]
+  ]
+  .children['seq[]]
+  .spouse['nil[]]
+  `
+  const pd = parseJdaml(testdata1)
 
   console.log(JSON.stringify(pd, null, 2))
 
@@ -344,8 +378,8 @@ test(`dmń doctest`, () => {
 const hlme = `
 .first name[John]
 .last name[Smith]
-.is alive['[true]]
-.age['[27]]
+.is alive['true[]]
+.age['=[27]]
 .address[
   .street address[21 2nd Street]
   .city[New York]
@@ -362,8 +396,8 @@ const hlme = `
     .number[646 555-4567]
   ]
 ]
-.children['[seq]]
-.spouse['[nil]]
+.children['seq[]]
+.spouse['nil[]]
 
 
 last modified 1 April 2001 by John Doe
@@ -374,7 +408,7 @@ last modified 1 April 2001 by John Doe
 .database[
   use IP if name resolution is not working
   .server[192.0.2.62]
-  .port['[143]]
+  .port['=[143]]
   .file[payroll.dat]
   .select columns[
     [name]
@@ -409,7 +443,7 @@ last modified 1 April 2001 by John Doe
   ]
 ]`
 
-test(`dmń doctest highlight`, () => {
+test(`JDAML doctest highlight`, () => {
   // const pd = highlightÐmń(doctest)
   const pd = highlightJdaml(hlme)
 
