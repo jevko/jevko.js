@@ -31,7 +31,7 @@ export const makeDecoders = (delimiters, ...rest) => {
 // todo: enforce delimiters within one code unit
 // assumes delimiters are normalized
 export const _makeDecoders = (delimiters) => {
-  const {opener, closer, escaper, fencer} = delimiters
+  const {opener, closer, escaper, fencer, tagger} = delimiters
 
   // todo: max depth
   const parseRoot = (str, receiver) => {
@@ -134,6 +134,13 @@ export const _makeDecoders = (delimiters) => {
     const locations = [location(state)]
     // skip escaper
     advance(str, state)
+
+    if (state.index < str.length && str[state.index] === tagger) {
+      // skip tagger
+      advance(str, state)
+      return parseTagged(str, state, locations[0])
+    }
+
     // save first potential digraph 'to' location
     locations.push(location(state))
     for (
@@ -277,6 +284,128 @@ export const _makeDecoders = (delimiters) => {
     }
     // console.error('>>>', endindex, fencelen, str.length - endindex, str)
     throw SyntaxError(`Expected fenced text to be closed but got end of input! Text started at ${locationstr(fencedfrom)}.`)
+  }
+  
+  const parseTagged = (str, state, taggedfrom) => {
+    // `$?
+    //   ^
+
+    // todo: parseTag
+    const tag = parseTag(str, state, taggedfrom)
+    const tagindex = tag.from.index
+    // `$tag$?
+    //       ^
+    const from = location(state)
+
+    // more like othersideofthefencestartindex / othersidestartindex / mstartindex
+    let tagmatchindex = -1
+    let tagmatches = false
+    let thru
+    let prev
+    let til
+    for (
+      ; 
+      state.index < str.length; 
+      prev = location(state), advance(str, state)
+    ) {
+      const c = str[state.index]
+      if (tagmatchindex === -1) {
+        if (c === tagger) {
+          tagmatchindex = tagindex
+          thru = prev
+          til = location(state)
+        }
+      }
+      else {
+        if (c === str[tagmatchindex]) {
+          tagmatchindex += 1
+          if (c === tagger) tagmatches = true
+        }
+        else {
+          // && c !== escaper
+          if (c === opener && tagmatches) {
+            const text = {
+              source: str,
+              tag,
+              from: taggedfrom,
+              thru: prev,
+              til: location(state),
+              content: {
+                from,
+                thru,
+                til,
+              },
+            }
+            return {text}
+          }
+          else if (c === closer && tagmatches) {
+            const text = {
+              source: str,
+              tag,
+              from: taggedfrom,
+              thru: prev,
+              til: location(state),
+              content: {
+                from,
+                thru,
+                til,
+              },
+            }
+            return {text}
+          }
+          tagmatchindex = -1
+          tagmatches = false
+          // console.log('---', c, str)
+        }
+      }
+    }
+    if (tagmatchindex !== -1 && tagmatches) {
+      const text = {
+        source: str,
+        tag,
+        from: taggedfrom,
+        thru: prev,
+        til: location(state),
+        content: {
+          from,
+          thru,
+          til,
+        },
+      }
+      return {text}
+    }
+    // console.error('>>>', endindex, fencelen, str.length - endindex, str)
+    throw SyntaxError(`Expected tagged text to be closed but got end of input! Text started at ${locationstr(taggedfrom)}.`)
+  }
+  const parseTag = (str, state, taggedfrom) => {
+    // `$?
+    //   ^
+    const from = location(state)
+    // note: this is initialized to before `from`, signifying empty tag
+    let prev = taggedfrom
+    for (
+      ; 
+      state.index < str.length; 
+      prev = location(state), advance(str, state)
+    ) {
+      const c = str[state.index]
+      if (c === tagger) {
+        // skip $
+        advance(str, state)
+        return {
+          from,
+          thru: prev,
+          til: location(state),
+        }
+      }
+      // note: this regexp is based on PostgreSQL syntax for identifiers
+      //       it's a bit more lenient in that it allows digits anywhere
+      //       but also more strict, as it does not allow letters other than a-zA-Z
+      else if (/[a-zA-Z0-9_]/.test(c) === false) {
+        throw SyntaxError(`Expected tagged text tag to contain only characters /[a-zA-Z0-9_]/ but got [${c}] at ${locationstr(state)}!`)
+      }
+    }
+    throw SyntaxError(`Expected tagged text tag to be closed but got end of input! Text started at ${locationstr(taggedfrom)}. Tag started at ${locationstr(from)}.`)
   }
 
   return parseRoot

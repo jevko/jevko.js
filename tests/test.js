@@ -85,3 +85,19 @@ test('unicode', () => {
   assert.equal(subjevkos[0].jevko.suffix, `𐀀`)
   assert.equal(suffix, `_10FFFF-􏿿_08ffff-򏿿`)
 })
+
+test(`tagged`, () => {
+  const str = "`$t$hello$t$"
+
+  const parsed = jevkoFromString(str)
+
+  console.log(parsed)
+
+  assert.equal(parsed.suffix, `hello`)
+
+
+  assert.equal(jevkoFromString("`$$hiho$$").suffix, `hiho`)
+  assert.equal(jevkoFromString("`$000$hiho$000$").suffix, `hiho`)
+  assert.equal(jevkoFromString("`$000$hiho$000$[]").subjevkos[0].prefix, `hiho`)
+  assert.equal(jevkoFromString("[`$___$hiho$___$]").subjevkos[0].jevko.suffix, `hiho`)
+})

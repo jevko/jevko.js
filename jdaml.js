@@ -39,38 +39,67 @@ export const seedFromString = (str) => {
 export const parseElems = (tree) => {
   const {subs, text} = tree
   const nsubs = []
-  let t
   for (const {text, tree} of subs) {
     // todo: perhaps don't use '[k][v] for arbitrary keys
     //       instead, don't allow arbitrary keys/tags
     //       '[xyz]  is then an empty tag, value xyz
     //
     //       could add arbitrary keys as an extension in the next version
-    //       e.g. like .<-[key][value] or .<[key]>[value]
+    //       e.g. like .<-[key][value]
+    //              or .<[key]>[value]
+    //              or .{[key]}[value]
+    //                 ./[key]=[value]
+    //
     //       or simply .<-[[key][value]]
     //                 .[[key]=[value]]
     //                 .=[[key][value]]
-    if (t !== undefined) {
-      if (text !== '') throw Error('oops: text !== ""')
-      nsubs.push({tag: t, subs: parseElems(tree)})
-      t = undefined
-      continue
-    }
+    //                 ./[[key][value]]
 
     const [txt, tag] = extractTag(text)
     if (txt !== '') nsubs.push(txt)
-    if (tag.length === 1) {
-      t = tag + parseTag(tree)
-      continue
+    if (tag.length > 0) {
+      // ignore commented out
+      // console.log("TAG", tag)
+      if (tag.slice(1).startsWith(';')) continue
+      // substitute tag
+      // todo: ?impl in highlighter?
+      if (tag.length === 2 && tag[1] === '/') {
+        const {tag: substag, tree: substree} = extractSubstag(tree)
+        nsubs.push({tag: tag[0] + substag, subs: parseElems(substree)})
+        continue
+      }
     }
-    if (tag.slice(1).startsWith(';')) continue
     nsubs.push({tag, subs: parseElems(tree)})
   }
-  // todo: only allow singular ' but not .
-  if (t !== undefined) nsubs.push({tag: t, subs: []})
   if (text !== '') nsubs.push(text)
   return nsubs
 }
+const extractSubstag = (tree) => {
+  const {subs, text} = tree
+  // for now expect [[key][value]]
+  if (subs.length !== 2) throw Error('oops')
+  let substag
+  {
+    // key
+    // note: ignore text
+    const {text: _, tree} = subs[0]
+    {
+      const {subs, text} = tree
+      if (subs.length > 0) throw Error('oops')
+      substag = text
+    }
+  }
+  let substree
+  {
+    // value
+    // note: ignore text
+    const {text: _, tree} = subs[1]
+    substree = tree
+  }
+  return {tag: substag, tree: substree}
+}
+
+
 // NOTE: most likely don't implement this, because of [rock'n'roll]
 // before using this, address the [rock'n'roll] problem
 // if no good solution, then I think ['143[]], etc. is fine
