@@ -5,18 +5,18 @@ import { highlightJdaml, parseJdaml, parseJdamlMarkup } from "../jdaml.js";
 
 const testdata1 = `
 last modified 1 April 2001 by John Doe
-.first name[John]
-.last name[Smith]
-.is alive[  'bool[true]  ]
+./[first name]/[John]
+.last_name[Smith]
+.is_alive[  'bool[true]  ]
 .age['u64[27]]
 .address[
-  .street address[21 2nd Street]
+  .street_address[21 2nd Street]
   .city[New York]
   .state[NY]
-  .postal code[10021-3100]
+  .postal_code[10021-3100]
 ]
 any number of phone numbers can be entered
-.phone numbers[
+.phone_numbers[
   [
     .type[home]
     .number[212 555-1234]
@@ -31,7 +31,7 @@ any number of phone numbers can be entered
 
 .spouse2['json[null]]
 .children2['json[\`'[]'\`]]
-.is alive2['json[true]]
+.is_alive2['json[true]]
 .age2['json[27]]
 `
 
@@ -65,7 +65,7 @@ comment.yarr[odd[1][2][3][4]]
 .yarl[
   ._oof[foo]
   .a[[x][y]]
-  .b['num[2]]
+  .b['nom[2]]
   .c['bool[true]'bool[false]]
 ]`
 
@@ -101,9 +101,9 @@ const doctest = `'doctest[
 
 yada yada
 
-'test setup[
+'test-setup[
   .group[*]
-  .skip if[pd is None]
+  .skip-if[pd is None]
   .code[\`'
     data = pd.Series([42])
   '\`]
@@ -111,9 +111,9 @@ yada yada
 
 yada yada
 
-'doc test[
-  .skip if[pd is None]
-  .py version[> 3.10]
+'doc-test[
+  .skip-if[pd is None]
+  .py-version[> 3.10]
   .code[\`'
     >>> data.iloc[0]
     42
@@ -122,17 +122,17 @@ yada yada
 
 yada yada
 
-'test code[
-  .skip if[pd is None]
-  .code[\`'
+'test-code[
+  .skip-if[pd is None]
+  .code[\`/___/
     print(data.iloc[-1])
-  '\`]
+  /___/]
 ]
 
 yada yada
 
-'test output[
-  .skip if[pd is None]
+'test-output[
+  .skip-if[pd is None]
   .hide[]
   .options[-ELLIPSIS, +NORMALIZE_WHITESPACE]
   .code[\`'
@@ -150,16 +150,16 @@ test(`JDAML 1`, () => {
 
   assert.deepEqual(pd, {
     "first name": "John",
-    "last name": "Smith",
-    "is alive": true,
+    "last_name": "Smith",
+    "is_alive": true,
     "age": 27,
     "address": {
-      "street address": "21 2nd Street",
+      "street_address": "21 2nd Street",
       "city": "New York",
       "state": "NY",
-      "postal code": "10021-3100"
+      "postal_code": "10021-3100"
     },
-    "phone numbers": [
+    "phone_numbers": [
       {
         "type": "home",
         "number": "212 555-1234"
@@ -173,7 +173,7 @@ test(`JDAML 1`, () => {
     "spouse": null,
     "spouse2": null,
     "children2": [],
-    "is alive2": true,
+    "is_alive2": true,
     "age2": 27
   })
 })
@@ -199,7 +199,7 @@ test(`JDAML 2`, () => {
         "y"
       ],
       "b": {
-        "_tag": "num",
+        "_tag": "nom",
         "_subs": [
           "2"
         ]
@@ -342,18 +342,18 @@ test(`JDAML doctest`, () => {
 test(`JDAML =`, () => {
   const testdata1 = `
   last modified 1 April 2001 by John Doe
-  .first name[John]
-  .last name[Smith]
-  .is alive[  'true[]  ]
-  .age['=[27]]
+  .first_name[John]
+  .last_name[Smith]
+  .is_alive[  'true[]  ]
+  .age['num[27]]
   .address[
-    .street address[21 2nd Street]
+    .street_address[21 2nd Street]
     .city[New York]
     .state[NY]
-    .postal code[10021-3100]
+    .postal_code[10021-3100]
   ]
   any number of phone numbers can be entered
-  .phone numbers[
+  .phone_numbers[
     [
       .type[home]
       .number[212 555-1234]
@@ -379,7 +379,7 @@ const hlme = `
 .first name[John]
 .last name[Smith]
 .is alive['true[]]
-.age['=[27]]
+.age['num[27]]
 .address[
   .street address[21 2nd Street]
   .city[New York]
@@ -408,7 +408,7 @@ last modified 1 April 2001 by John Doe
 .database[
   use IP if name resolution is not working
   .server[192.0.2.62]
-  .port['=[143]]
+  .port['num[143]]
   .file[payroll.dat]
   .select columns[
     [name]
@@ -533,8 +533,10 @@ test('parse', () => {
   assert.deepEqual(parse('.k1[abc] .k2[def] .;k3[xyz]'), {k1: 'abc', k2: 'def'})
   // assert.deepEqual(parse('.k1[abc] .k2[def] .[;k3][xyz]'), {k1: 'abc', k2: 'def', ';k3': 'xyz'})
   // assert.deepEqual(parse('.k1[abc] .k2[def] .[\\][xyz]'), {k1: 'abc', k2: 'def', '\\': 'xyz'})
-  assert.deepEqual(parse('.k1[abc] .k2[def] ./[[;k3][xyz]]'), {k1: 'abc', k2: 'def', ';k3': 'xyz'})
-  assert.deepEqual(parse('.k1[abc] .k2[def] ./[[\\][xyz]]'), {k1: 'abc', k2: 'def', '\\': 'xyz'})
+  // assert.deepEqual(parse('.k1[abc] .k2[def] ./[[;k3][xyz]]'), {k1: 'abc', k2: 'def', ';k3': 'xyz'})
+  // assert.deepEqual(parse('.k1[abc] .k2[def] ./[[\\][xyz]]'), {k1: 'abc', k2: 'def', '\\': 'xyz'})
+  assert.deepEqual(parse('.k1[abc] .k2[def] ./[;k3]/[xyz]'), {k1: 'abc', k2: 'def', ';k3': 'xyz'})
+  assert.deepEqual(parse('.k1[abc] .k2[def] ./[\\]/[xyz]'), {k1: 'abc', k2: 'def', '\\': 'xyz'})
 
   assert.deepEqual(parse('.k1``[v1]'), {'k1`': 'v1'})
   assert.deepEqual(parse('.k1[v1``]'), {k1: 'v1`'})

@@ -1,12 +1,6 @@
 import { decodeString, textToString } from "./decode.js";
-import { jevkoToString } from "./jevkoToString.js";
 
-// Alternative name: JĄML -- Jevko All-Purpose Markup Language
-//                   J4ML
-//                   JML4
-//                   JDaML -- Jevko Data (and) Markup Language
-//                   JDAML
-// JGML -- Jevko Generic Markup Language
+//                   JDAML -- Jevko DAta Markup Language
 
 // Data Markup Ńotation
 export const parseJdaml = (str) => {
@@ -39,96 +33,74 @@ export const seedFromString = (str) => {
 export const parseElems = (tree) => {
   const {subs, text} = tree
   const nsubs = []
-  for (const {text, tree} of subs) {
-    // todo: perhaps don't use '[k][v] for arbitrary keys
-    //       instead, don't allow arbitrary keys/tags
-    //       '[xyz]  is then an empty tag, value xyz
-    //
-    //       could add arbitrary keys as an extension in the next version
-    //       e.g. like .<-[key][value]
-    //              or .<[key]>[value]
-    //              or .{[key]}[value]
-    //                 ./[key]=[value]
-    //
-    //       or simply .<-[[key][value]]
-    //                 .[[key]=[value]]
-    //                 .=[[key][value]]
-    //                 ./[[key][value]]
 
+  for (let i = 0; i < subs.length; ++i) {
+    const {text, tree} = subs[i]
     const [txt, tag] = extractTag(text)
     if (txt !== '') nsubs.push(txt)
     if (tag.length > 0) {
       // ignore commented out
       // console.log("TAG", tag)
-      if (tag.slice(1).startsWith(';')) continue
+      if (tag.length > 1 && tag.slice(1).startsWith(';')) continue
       // substitute tag
       // todo: ?impl in highlighter?
-      if (tag.length === 2 && tag[1] === '/') {
-        const {tag: substag, tree: substree} = extractSubstag(tree)
+      else if (tag.length === 2 && tag[1] === '/') {
+        //                 ./[key]/[value]
+        const {substag, substree, subsi} = extractSubstag(subs, i)
         nsubs.push({tag: tag[0] + substag, subs: parseElems(substree)})
+        i = subsi
         continue
       }
     }
     nsubs.push({tag, subs: parseElems(tree)})
   }
+
   if (text !== '') nsubs.push(text)
   return nsubs
 }
-const extractSubstag = (tree) => {
-  const {subs, text} = tree
-  // for now expect [[key][value]]
-  if (subs.length !== 2) throw Error('oops')
+const extractSubstag = (subs, i) => {
+  // we are at the sub that contains ./[...]
+  // if (i >= subs.length) throw Error('oops')
   let substag
   {
     // key
     // note: ignore text
-    const {text: _, tree} = subs[0]
+    const {text: _, tree} = subs[i]
     {
       const {subs, text} = tree
       if (subs.length > 0) throw Error('oops')
       substag = text
     }
   }
+  i += 1
+  // for now expect move to the next sub we expect to be /[value]
+  if (i >= subs.length) throw Error('oops')
   let substree
   {
     // value
-    // note: ignore text
-    const {text: _, tree} = subs[1]
+    const {text, tree} = subs[i]
+    if (text !== '/') throw Error('oops')
     substree = tree
   }
-  return {tag: substag, tree: substree}
+  return {substag, substree, subsi: i}
 }
 
-
-// NOTE: most likely don't implement this, because of [rock'n'roll]
-// before using this, address the [rock'n'roll] problem
-// if no good solution, then I think ['143[]], etc. is fine
-// ['[143]] could be a good compromise
-// NB todo: handle ['[xyz]] in some way -- either error or treat as ['[xyz][]]
-// todo: for things like ['seq] or ['143] or ['true]
-const extractOneAndOnly = (text) => {
-  const start = text.length - 1
-  let i = start
-  for (; i >= 0; --i) {
-    const c = text[i]
-    if (c === '\n' || c === '\r') {
-      return [text, '']
-    }
-    else if (c === "'" && i < start) {
-      return [text.slice(0, i), text.slice(i)]
-    }
-  }
-  return [text, '']
-}
 const extractTag = (text) => {
   let i = text.length - 1
   for (; i >= 0; --i) {
     const c = text[i]
-    if (c === '\n' || c === '\r') {
+    if ('\r\n\t '.includes(c)) {
       return [text, '']
     }
     else if (c === '.' || c === "'") {
-      return [text.slice(0, i), text.slice(i)]
+      const tag = text.slice(i)
+      // note: treating .[] as a text dot followed by an anon element
+      // todo: decide if that is final; may also error in this case and require .'[]
+      //       then the restriction can be relaxed in the next version if need be
+      // if (tag === '.') throw Error('oops')
+      if (tag === '.') return [text, '']
+      // todo: validate tag
+      return [text.slice(0, i), tag]
     }
   }
   return [text, '']
@@ -224,6 +196,18 @@ const parsers = {
     if (typeof parsed === 'number') return parsed
     throw Error('oops')
   },
+  // todo:
+  num: ({_subs, _tag, ...rest}) => {
+    if (_subs.length !== 1 || Object.entries(rest).length !== 0) throw Error('oops')
+    const sub = _subs[0]
+    if (typeof sub !== 'string') throw Error('oops')
+    if (sub === '-Infinity') return -Infinity
+    if (sub === 'Infinity') return Infinity
+    if (sub === 'NaN') return NaN
+    const parsed = JSON.parse(sub)
+    if (typeof parsed === 'number') return parsed
+    throw Error('oops')
+  },
   bool: ({_subs, _tag, ...rest}) => {
     if (_subs.length !== 1 || Object.entries(rest).length !== 0) {
       throw Error('oops')
@@ -303,7 +287,7 @@ const extractData = (parent) => {
 
   // disallow nonattr _subs in objects
   if (_subs.filter(s => typeof s !== 'string').length > 0) {
-    console.error(_subs)
+    console.error('oops', _subs)
     throw Error('oops')
   }
 
@@ -356,6 +340,8 @@ const iszerolength = (text) => {
   const {from, til} = text
   return from.index === til.index
 }
+// todo: bring up to speed with latest changes
+//       particularly \t and ' ' now can't be in tag names
 const extractTagForHighlight = (text) => {
   if (text.digraphs === undefined) {
     console.error('>>>', text)
@@ -571,3 +557,4 @@ export const seedFromStringForHighlight = (str) => {
 export const highlightJdaml = (str) => {
   return highlightSubs(parseElemsForHighlight(seedFromStringForHighlight(str)))
 }
+

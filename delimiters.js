@@ -3,7 +3,7 @@ export const defaultCloser = ']'
 export const defaultEscaper = '`'
 export const defaultFencer = "'"
 // todo: perhaps change to / or sth
-export const defaultTagger = "$"
+export const defaultTagger = "/"
 
 export const defaultDelimiters = {
   opener: defaultOpener,

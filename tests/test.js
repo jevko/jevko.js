@@ -87,17 +87,21 @@ test('unicode', () => {
 })
 
 test(`tagged`, () => {
-  const str = "`$t$hello$t$"
+  const str = "`/t/hello/t/"
 
   const parsed = jevkoFromString(str)
 
-  console.log(parsed)
+  // console.log('>>>', jevkoFromString("`$$$$$"))
 
   assert.equal(parsed.suffix, `hello`)
 
 
-  assert.equal(jevkoFromString("`$$hiho$$").suffix, `hiho`)
-  assert.equal(jevkoFromString("`$000$hiho$000$").suffix, `hiho`)
-  assert.equal(jevkoFromString("`$000$hiho$000$[]").subjevkos[0].prefix, `hiho`)
-  assert.equal(jevkoFromString("[`$___$hiho$___$]").subjevkos[0].jevko.suffix, `hiho`)
+  assert.equal(jevkoFromString("`//hiho//").suffix, `hiho`)
+  assert.equal(jevkoFromString("`////").suffix, ``)
+  assert.equal(jevkoFromString("`/x///x/").suffix, `/`)
+  assert.equal(jevkoFromString("`/000/hiho/000/").suffix, `hiho`)
+  assert.equal(jevkoFromString("`/000/hiho/000/[]").subjevkos[0].prefix, `hiho`)
+  assert.equal(jevkoFromString("[`/___/hiho/___/]").subjevkos[0].jevko.suffix, `hiho`)
+
+  assert.throws(() => jevkoFromString("`/////"))
 })
