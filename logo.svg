@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="105mm" height="105mm" version="1.1" viewBox="0 0 105 105" xmlns="http://www.w3.org/2000/svg">
+ <g transform="translate(-38.4988 -58.7406)">
+  <g transform="matrix(2 0 0 2 -237.727 -55.6084)" stroke-width=".5">
+   <g stroke-linecap="square" stroke-opacity=".996078" stroke-width=".529165">
+    <circle transform="translate(-138.936 -87.3943)" cx="303.299" cy="170.819" r="26.25" fill="#fff"/>
+    <circle transform="translate(-138.936 -87.3943)" cx="303.299" cy="170.819" r="25"/>
+    <circle transform="translate(-138.936 -87.3943)" cx="303.299" cy="170.819" r="20" fill="#fff"/>
+   </g>
+   <path transform="matrix(1.089 0 0 1 -165.93 -87.3943)" d="m300.799 173.712v18.0082h5v-18.3928l-5 0.38466z"/>
+   <g transform="matrix(1.04 0 0 1.04 -6.57452 -4.90124)" stroke-opacity=".996078">
+    <path d="m154.606 94.3179 9.78575-16.9491 9.72741 16.9491h-19.5132z" stroke-width=".381611"/>
+    <path d="m157.923 85.5556 6.45859-11.1864 6.42009 11.1864h-12.8787z" stroke-width=".38161"/>
+    <path d="m160.113 78.7522s4.26267-7.38304 4.26267-7.38304 4.23725 7.38304 4.23725 7.38304h-8.49992z" stroke-width=".38161"/>
+   </g>
+  </g>
+ </g>
+</svg>

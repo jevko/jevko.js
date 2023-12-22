@@ -1,3 +1,5 @@
+<img alt="Jevko logo" src="logo.svg" width="128" />
+
 # jevko.js
 
 [![](https://data.jsdelivr.com/v1/package/gh/jevko/jevko.js/badge)](https://www.jsdelivr.com/package/gh/jevko/jevko.js)
@@ -13,7 +15,8 @@ Includes a Jevko parser/decoder (`jevkoFromString`) and a Jevko stringifier/enco
 
 ### Node.js
 
-<!-- todo: npm package -->
+An [npm package](https://www.npmjs.com/package/@jevko-org/jevko.js) is available:
+
 ```
 npm install @jevko-org/jevko.js
 ```
