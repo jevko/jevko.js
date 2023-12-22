@@ -303,6 +303,7 @@ export const _makeDecoders = (delimiters) => {
     let thru
     let prev
     let til
+    // $x$$$x$
     for (
       ; 
       state.index < str.length; 
@@ -317,7 +318,8 @@ export const _makeDecoders = (delimiters) => {
         }
       }
       else {
-        if (c === str[tagmatchindex]) {
+        // note: tagmatches === false prevents matching a string like $$$$$ (5 taggers)
+        if (c === str[tagmatchindex] && tagmatches === false) {
           tagmatchindex += 1
           if (c === tagger) tagmatches = true
         }
@@ -353,7 +355,16 @@ export const _makeDecoders = (delimiters) => {
             }
             return {text}
           }
-          tagmatchindex = -1
+          
+          // this is to match strings like $x$$$x$
+          if (c === tagger) {
+            tagmatchindex = tagindex
+            thru = prev
+            til = location(state)
+          }
+          else {
+            tagmatchindex = -1
+          }
           tagmatches = false
           // console.log('---', c, str)
         }
