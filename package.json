@@ -7,14 +7,13 @@
   "scripts": {
     "test": "node --test"
   },
-  "///////////////////////": "TODO: remember to update files on each new file",
+  "///////////////////////": "remember to update files on each new file",
   "files": [
     "encode.js",
     "decode.js",
     "delimiters.js",
     "jevkoFromString.js",
-    "jevkoToString.js",
-    "sadzonka.js"
+    "jevkoToString.js"
   ],
   "repository": {
     "type": "git",
