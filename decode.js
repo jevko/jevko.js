@@ -264,7 +264,6 @@ export const _makeDecoders = (delimiters) => {
           return {text}
         }
         endindex = -1
-        // console.log('---', c, str)
       }
     }
     if (endindex !== -1 && fencelen === str.length - endindex) {
@@ -282,7 +281,6 @@ export const _makeDecoders = (delimiters) => {
       }
       return {text}
     }
-    // console.error('>>>', endindex, fencelen, str.length - endindex, str)
     throw SyntaxError(`Expected fenced text to be closed but got end of input! Text started at ${locationstr(fencedfrom)}.`)
   }
   
@@ -366,7 +364,6 @@ export const _makeDecoders = (delimiters) => {
             tagmatchindex = -1
           }
           tagmatches = false
-          // console.log('---', c, str)
         }
       }
     }
@@ -385,7 +382,6 @@ export const _makeDecoders = (delimiters) => {
       }
       return {text}
     }
-    // console.error('>>>', endindex, fencelen, str.length - endindex, str)
     throw SyntaxError(`Expected tagged text to be closed but got end of input! Text started at ${locationstr(taggedfrom)}.`)
   }
   const parseTag = (str, state, taggedfrom) => {

@@ -91,8 +91,6 @@ test(`tagged`, () => {
 
   const parsed = jevkoFromString(str)
 
-  // console.log('>>>', jevkoFromString("`$$$$$"))
-
   assert.equal(parsed.suffix, `hello`)
 
 
